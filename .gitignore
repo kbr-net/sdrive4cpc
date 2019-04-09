@@ -1,0 +1,7 @@
+*.rel
+*.asm
+*.lk
+*.lst
+*.sym
+*.map
+sdrive.*
