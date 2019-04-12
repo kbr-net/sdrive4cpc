@@ -18,9 +18,7 @@
 	;; Ordering of segments for the linker.
 	.area	_HOME
 	.area	_CODE
-        
+	.area	_INITIALIZED
 	.area	_DATA
     	.area   _BSS
     	.area   _HEAP
-
-   	.area   _CODE
