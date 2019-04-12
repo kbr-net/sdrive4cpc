@@ -77,6 +77,10 @@ reset:
 				offset = 0;
 				faccess_offset(FILE_ACCESS_READ,offset,0x100);
 				tracks = atari_sector_buffer[0x30];	//save nr. of tracks
+				if(tracks < 39 || tracks > 42) {
+					printf("%u tracks looks not like DSK!\r\n", tracks);
+					break;
+				}
 
 				//read tracks
 				offset += 0x100;
