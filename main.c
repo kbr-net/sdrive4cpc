@@ -7,6 +7,7 @@
 
 unsigned char atari_sector_buffer[11*0x200];
 unsigned char mmc_sector_buffer[512];	// one sector
+char linebuf[40];
 struct GlobalSystemValues GS;
 struct FileInfoStruct FileInfo;
 virtual_disk_t vDisk;
@@ -15,7 +16,12 @@ int main () {
 	unsigned char r;
 	FileInfo.vDisk = &vDisk;
 
+	if(!floppy_init()) {
+		printf("error floppy init\r\n");
+		return(1);
+	}
 	printf("SDrive for CPC --- (c) 2019 by KBr\r\n");	
+
 reset:
 	mmcInit();
 	r = mmcReset();
@@ -39,7 +45,6 @@ reset:
 		unsigned char c,tracks;
 		unsigned short i;
 		unsigned long offset;
-		char linebuf[40];
 
 		printf("\r\n[i] - (re)init SD Card\r\n[d] - directory\r\n[w] - write image to disc\r\n[q] - quit\r\n\r\n# ");
 		c = getchar();
@@ -77,7 +82,7 @@ reset:
 				offset = 0;
 				faccess_offset(FILE_ACCESS_READ,offset,0x100);
 				tracks = atari_sector_buffer[0x30];	//save nr. of tracks
-				if(tracks < 39 || tracks > 42) {
+				if(tracks < 39 || tracks > 43) {
 					printf("%u tracks looks not like DSK!\r\n", tracks);
 					break;
 				}
@@ -85,11 +90,14 @@ reset:
 				//read tracks
 				offset += 0x100;
 				for(;;) {
-					printf("Reading at %p\r\n", offset);
+					printf("Reading at 0x%05lx\r\n", offset);
 					if(!faccess_offset(FILE_ACCESS_READ,offset,11*0x200))
 						break;
 					printf("Writing track %02u\r\n", atari_sector_buffer[0x18]);
-					write_track(atari_sector_buffer);
+					if(!write_track(atari_sector_buffer)) {
+						printf("error writing track\r\n");
+						break;
+					}
 					offset += atari_sector_buffer[0x15]*0x200+0x100;
 				}
 				break;

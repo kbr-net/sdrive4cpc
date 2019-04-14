@@ -15,6 +15,10 @@ trk_hdr:	.ds	2
 sec_buf:	.ds	2
 
 	;; this is initialised when the "BIOS: FORMAT TRACK" RSX has been found.
+bios_select_format:
+	.dw 0		;; address of function
+	.db 0		;; "rom select" for function
+
 bios_format_track:
 	.dw 0		;; address of function
 	.db 0		;; "rom select" for function
@@ -22,6 +26,10 @@ bios_format_track:
 bios_write_sector:
 	.dw 0		;; address of function
 	.db 0		;; "rom select" for function
+
+	.area _INITIALIZED
+cmd_bios_select_format:
+	.db 3+0x80	;; this is the "BIOS: SELECT FORMAT" RSX
 
 cmd_bios_write_sector:
 	.db 5+0x80	;; this is the "BIOS: WRITE SECTOR" RSX
@@ -32,7 +40,45 @@ cmd_bios_format_track:
 	.area _CODE
 
 ;; firmware function to find a RSX
+kl_rom_walk	=	0xbccb
 kl_find_command	=	0xbcd4
+
+_floppy_init::
+	;;;init roms - needed if started directly with RUN"...
+	ld de,#0x0040
+	ld hl,#0xa6fb
+	call kl_rom_walk
+
+	;;;find commands
+	ld hl,#(cmd_bios_select_format)
+	call kl_find_command
+	jr nc,err
+	;; command found, store address of command
+	ld (bios_select_format),hl
+	;; store "rom select" of command
+	ld a,c
+	ld (bios_select_format+2),a
+
+	ld hl,#(cmd_bios_format_track)
+	call kl_find_command
+	jr nc,err
+	ld (bios_format_track),hl
+	ld a,c
+	ld (bios_format_track+2),a
+
+	ld hl,#cmd_bios_write_sector
+	call kl_find_command
+	jr nc,err
+	ld (bios_write_sector),hl
+	ld a,c
+	ld (bios_write_sector+2),a
+
+	ld l,#1
+	jr exit
+err:
+	ld l,#0
+exit:
+	ret
 
 _write_track::
 	push ix
@@ -48,28 +94,6 @@ _write_track::
 	add hl,bc	;to skip
 	ld (sec_buf),hl
 
-	ld hl,#(cmd_bios_format_track)
-	call kl_find_command
-	jr nc,err
-
-	;; command found, store address of command
-	ld (bios_format_track),hl
-
-	;; store "rom select" of command
-	ld a,c
-	ld (bios_format_track+2),a
-
-	ld hl,#cmd_bios_write_sector
-	call kl_find_command
-	jr nc,err
-
-	;; command found, store address of command
-	ld (bios_write_sector),hl
-
-	;; store "rom select" of command
-	ld a,c
-	ld (bios_write_sector+2),a
-
 	;;;copy sector data to sector header table
 	ld hl,(trk_hdr)
 	ld bc,#0x14		;offset starting sector info
@@ -83,19 +107,30 @@ tt:	ld bc,#4
 	dec a
 	jr nz,tt
 
+	;;;set format (not sure, if really needed here?)
+	call select
+
 	;;;format track
 	call format
 
 	;;;write sector data
 	call write
 
-err:
 	pop ix
+	ld l,#1		;return ok
+	ret
+
+select:
+	ld a,(sec_tbl + 2)
+	;; execute command
+	rst 3*8
+	.dw bios_select_format
+
 	ret
 
 format:
 	;; HL = address of C,H,R,N table 
-	ld hl,(sec_tbl)
+	ld hl,#sec_tbl
 
 	;; D = track number
 	;; (change this value to define the track to write to )
