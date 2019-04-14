@@ -5,7 +5,7 @@
 #include "mmc.h"
 #include "floppy.h"
 
-unsigned char atari_sector_buffer[11*0x200];
+unsigned char file_buffer[11*0x200];
 unsigned char mmc_sector_buffer[512];	// one sector
 char linebuf[40];
 struct GlobalSystemValues GS;
@@ -55,7 +55,7 @@ reset:
 			case 'd':
 				i = 0;
 				while(fatGetDirEntry(i,1)) {
-					printf("%02u %s\t%lu\r\n", i, atari_sector_buffer, FileInfo.vDisk->size);
+					printf("%02u %s\t%lu\r\n", i, file_buffer, FileInfo.vDisk->size);
 					i++;
 				}
 				break;
@@ -73,7 +73,7 @@ reset:
 				i--;
 				linebuf[i] = 0;		//mark end
 				fatGetDirEntry(atoi(linebuf),1);	//set values for file
-				printf("\nLoading %s...\r\n", atari_sector_buffer);
+				printf("\nLoading %s...\r\n", file_buffer);
 				FileInfo.vDisk->current_cluster=FileInfo.vDisk->start_cluster;
 				FileInfo.vDisk->ncluster=0;
 				FileInfo.vDisk->flags=FLAGS_DRIVEON;
@@ -81,7 +81,7 @@ reset:
 				//read the DSK header
 				offset = 0;
 				faccess_offset(FILE_ACCESS_READ,offset,0x100);
-				tracks = atari_sector_buffer[0x30];	//save nr. of tracks
+				tracks = file_buffer[0x30];	//save nr. of tracks
 				if(tracks < 39 || tracks > 43) {
 					printf("%u tracks looks not like DSK!\r\n", tracks);
 					break;
@@ -93,12 +93,12 @@ reset:
 					printf("Reading at 0x%05lx\r\n", offset);
 					if(!faccess_offset(FILE_ACCESS_READ,offset,11*0x200))
 						break;
-					printf("Writing track %02u\r\n", atari_sector_buffer[0x18]);
-					if(!write_track(atari_sector_buffer)) {
+					printf("Writing track %02u\r\n", file_buffer[0x18]);
+					if(!write_track(file_buffer)) {
 						printf("error writing track\r\n");
 						break;
 					}
-					offset += atari_sector_buffer[0x15]*0x200+0x100;
+					offset += file_buffer[0x15]*0x200+0x100;
 				}
 				break;
 			case 'q':

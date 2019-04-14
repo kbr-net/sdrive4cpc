@@ -42,8 +42,8 @@
 #include "fat.h"
 #include "mmc.h"
 
-#define FileNameBuffer atari_sector_buffer
-extern unsigned char atari_sector_buffer[];
+#define FileNameBuffer file_buffer
+extern unsigned char file_buffer[];
 extern unsigned char mmc_sector_buffer[];	// one sector
 extern struct GlobalSystemValues GS;
 extern struct FileInfoStruct FileInfo;			//< file information for last file accessed
@@ -246,7 +246,7 @@ fat_read_from_last_entry:
 				//pokud nechceme longname, NESMI je vubec kompletovat
 				//a preskoci na dalsi polozku
 				//( takze ani haveLongNameEntry nikdy nebude nastaveno na 1)
-				//Jinak by totiz preplacaval dalsi kusy atari_sector_bufferu 12-255 ! BACHA!!!
+				//Jinak by totiz preplacaval dalsi kusy file_bufferu 12-255 ! BACHA!!!
 				if (!use_long_names) goto fat_next_dir_entry;
 
 				we = (struct winentry *) de;
@@ -492,9 +492,9 @@ unsigned short faccess_offset(char mode, u32 offset_start, unsigned short ncount
                         break; //return (j&0xFFFF);
 
                 if(mode==FILE_ACCESS_WRITE)
-                        mmc_sector_buffer[offset]=atari_sector_buffer[j]; //SDsektor<-atarisektor
+                        mmc_sector_buffer[offset]=file_buffer[j]; //SDsektor<-filebuf
                 else
-                        atari_sector_buffer[j]=mmc_sector_buffer[offset]; //atarisektor<-SDsektor
+                        file_buffer[j]=mmc_sector_buffer[offset]; //filebuf<-SDsektor
 
                 end_of_file--;
 		offset++;
@@ -710,7 +710,7 @@ u32 fatFileNew (char *filename, u32 size) {
 	//check filename already present
 	//struct direntry * de = (struct direntry*) mmc_sector_buffer;
 	while ( fatGetDirEntry(i++,0) ) {
-		if (strcmp(atari_sector_buffer, filename)) {
+		if (strcmp(file_buffer, filename)) {
 			printf("name %s already exists!\r\n", filename);
 			return(0);
 		}
