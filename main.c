@@ -12,6 +12,23 @@ struct GlobalSystemValues GS;
 struct FileInfoStruct FileInfo;
 virtual_disk_t vDisk;
 
+unsigned char * getline() {
+	unsigned char i = 0;
+	unsigned char c = 0;
+
+	while(c != '\r') {
+		c = getchar();
+		putchar(c);		//echo
+		linebuf[i] = c;
+		i++;
+		if (i > sizeof(linebuf))	//buffer full?
+			break;
+	}
+	i--;
+	linebuf[i] = 0;		//mark end
+	return(linebuf);
+}
+
 int main () {
 	unsigned char r;
 	FileInfo.vDisk = &vDisk;
@@ -44,34 +61,49 @@ reset:
 	while(1) {	//mainloop
 		unsigned char c,tracks;
 		unsigned short i;
+		unsigned char type;
 		unsigned long offset;
 
-		printf("\r\n[i] - (re)init SD Card\r\n[d] - directory\r\n[w] - write image to disc\r\n[q] - quit\r\n\r\n# ");
+		printf("\r\n[i] - (re)init SD Card\r\n[d] - directory\r\n[c] - change directory\r\n[w] - write image to disc\r\n[q] - quit\r\n\r\n# ");
 		c = getchar();
 		printf("%c\r\n",c);
 		switch(c) {
 			case 'i':
 				goto reset;
 			case 'd':
+				printf("idx   length type name\r\n");
 				i = 0;
 				while(fatGetDirEntry(i,1)) {
-					printf("%02u %s\t%lu\r\n", i, file_buffer, FileInfo.vDisk->size);
+					type = 'f';
+					if(FileInfo.Attr & ATTR_SYSTEM) {
+						type = 's';
+					}
+					else if(FileInfo.Attr & ATTR_HIDDEN) {
+						type = 'h';
+					}
+					else if(FileInfo.Attr & ATTR_DIRECTORY) {
+						type = 'd';
+					}
+					printf("%3u %9lu %c %s\r\n", i, FileInfo.vDisk->size, type, file_buffer);
 					i++;
+					if(i % 10 == 0) {
+						printf("more?/[a]bort\r\n");
+						c = getchar();
+						if(c == 'a')
+							break;
+					}
 				}
+				break;
+			case 'c':
+				printf("dir index: ");
+				getline();
+				if(!fatGetDirEntry(atoi(linebuf),1) || !(FileInfo.Attr & ATTR_DIRECTORY))	//set values for dir
+					break;
+				FileInfo.vDisk->dir_cluster=FileInfo.vDisk->start_cluster;
 				break;
 			case 'w':
 				printf("file index: ");
-				i = 0;
-				while(c != '\r') {
-					c = getchar();
-					putchar(c);		//echo
-					linebuf[i] = c;
-					i++;
-					if (i > sizeof(linebuf))	//buffer full?
-						break;
-				}
-				i--;
-				linebuf[i] = 0;		//mark end
+				getline();
 				fatGetDirEntry(atoi(linebuf),1);	//set values for file
 				printf("\nLoading %s...\r\n", file_buffer);
 				FileInfo.vDisk->current_cluster=FileInfo.vDisk->start_cluster;
