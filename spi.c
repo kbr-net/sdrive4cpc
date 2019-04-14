@@ -67,29 +67,49 @@ void spiInit()
 
 u08 spiTransferByte(u08 data)
 {
-	unsigned char b;
-	unsigned char in = 0;
+	__asm
+		;;;get value from stack
+		ld hl,#2
+		add hl,sp
+		ld a,(hl)
+		ld c,a		;save it in c
+		ld d,#8		;bitcounter
+		ld l,#0		;input value to return
+	loop:
+		xor a		;clear all bits
+		;;;process data bit
+		rl c		;shift last(msb first!) bit into carry
+		jr nc,zero
+		ld a,#MOSI	;set MOSI
+		;;;clock bit
+	zero:	or #SCK		;add clock high
+		ld e,a
+		ld a,(_portval)	;load old port value
+		and #~MOSI	;clear old data value
+		or e		;add new value
+		ld (_portval),a	;and save it
+		ld b,#>_SPI_PORT_OUT	;and out
+		out (c),a	;value of c does not matter here, only msb byte in b!
 
-	// send a byte over SPI and ignore reply
-	for(b = 0; b < 8; b++) {
-		if (data & 0x80) {		//msb first!
-			portval |= MOSI;	//set data bit
-			SPI_PORT_OUT = portval;
-		}
-		else {
-			portval &=  ~MOSI;	//reset data bit
-			SPI_PORT_OUT = portval;
-		}
-		portval |= SCK;			//clock high
-		SPI_PORT_OUT = portval;
-		in <<= 1;			//shift for next bit
-		if ((SPI_PORT_IN & MISO) == 0)	//received one? (negated)
-			in |= 1;		//set it
-		portval &= ~SCK;		//clock low
-		SPI_PORT_OUT = portval;
-		data <<= 1;			//shift next bit
-	}
-	return(in);
+		;;;input bit
+		ld a,#>_SPI_PORT_IN
+		in a,(<_SPI_PORT_IN)
+		neg		;invert it due to hardware inverter
+		rla		;we need bit 6, so
+		rla		;shift it 2 times into carry
+		rl l		;and shift carry into l
+
+		;;;clock low
+		ld a,(_portval)
+		and #~SCK
+		ld (_portval),a	;save it
+		ld b,#>_SPI_PORT_OUT	;and out
+		out (c),a	;value of c does not matter here, only msb byte in b!
+
+		dec d
+		jr nz,loop	;next bit
+				;l was returned
+	__endasm;
 }
 
 u08 spiTransferFF()
