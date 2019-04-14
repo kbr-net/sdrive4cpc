@@ -3,7 +3,7 @@ CC=/media/soft/historic/cpc/cross/sdcc/bin/sdcc
 #AS=sdasz80
 AS=/media/soft/historic/cpc/cross/sdcc/bin/sdasz80
 
-CCFLAGS=-mz80
+CCFLAGS=-mz80#-DDEBUG
 LDFLAGS=--code-loc 0x120 --data-loc 0 --no-std-crt0
 
 TARGET=sdrive

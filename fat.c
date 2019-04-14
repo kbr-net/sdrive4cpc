@@ -137,7 +137,7 @@ unsigned char fatInit()
 		printf("fatinit: FAT32\r\n");
 		break;
 	default:
-		printf("INV Type %x\r\n", PartType);
+		printf("invalid parttype %x\r\n", PartType);
 		return 3; //partition not supported
 		break;
 	}
@@ -458,10 +458,14 @@ unsigned short faccess_offset(char mode, u32 offset_start, unsigned short ncount
         offset-=nsector*((u32)BytesPerSector);
 
         getClusterN(ncluster);
+#ifdef DEBUG
 	printf("cluster: %lu\r\n", FileInfo.vDisk->current_cluster);
+#endif
 
         current_sector = fatClustToSect(FileInfo.vDisk->current_cluster) + nsector;
+#ifdef DEBUG
 	printf("sector: %lu\r\n", current_sector);
+#endif
         mmcReadCached(current_sector);
 
         //for(j=0;j<ncount;j++,offset++)
@@ -480,11 +484,17 @@ unsigned short faccess_offset(char mode, u32 offset_start, unsigned short ncount
                                         nsector=0;
                                         ncluster++;
                                         getClusterN(ncluster);
+#ifdef DEBUG
 					printf("cluster: %lu\r\n", FileInfo.vDisk->current_cluster);
+#endif
                                 }
 
                                 current_sector = fatClustToSect(FileInfo.vDisk->current_cluster) + nsector;
+#ifdef DEBUG
 				printf("sector: %lu\r\n", current_sector);
+#else
+				printf(".");
+#endif
                                 mmcReadCached(current_sector);
                         }
 

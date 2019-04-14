@@ -90,10 +90,14 @@ reset:
 				//read tracks
 				offset += 0x100;
 				for(;;) {
+#ifdef DEBUG
 					printf("Reading at 0x%05lx\r\n", offset);
+#else
+					printf("Reading at 0x%05lx", offset);
+#endif
 					if(!faccess_offset(FILE_ACCESS_READ,offset,11*0x200))
 						break;
-					printf("Writing track %02u\r\n", file_buffer[0x18]);
+					printf("\r\nWriting track %02u\r\n", file_buffer[0x18]);
 					if(!write_track(file_buffer)) {
 						printf("error writing track\r\n");
 						break;
