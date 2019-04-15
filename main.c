@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "cpc.h"
 #include "types.h"
 #include "fat.h"
 #include "mmc.h"
@@ -134,6 +135,8 @@ reset:
 						printf("error writing track\r\n");
 						break;
 					}
+					if(readchar())
+						break;
 					offset += file_buffer[0x15]*0x200+0x100;
 				}
 				break;
