@@ -80,10 +80,10 @@ u08 spiTransferByte(u08 data)
 		xor a		;clear all bits
 		;;;process data bit
 		rl c		;shift last(msb first!) bit into carry
-		jr nc,zero
-		ld a,#MOSI	;set MOSI
+		rla
+		rla		;shift carry into bit 1
 		;;;clock bit
-	zero:	or #SCK		;add clock high
+		or #SCK		;add clock high
 		ld e,a
 		ld a,(_portval)	;load old port value
 		and #~MOSI	;clear old data value
