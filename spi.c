@@ -73,6 +73,7 @@ u08 spiTransferByte(u08 data)
 		add hl,sp
 		ld a,(hl)
 		ld c,a		;save it in c
+		ld b,#>_SPI_PORT_OUT	;set out port
 		ld d,#8		;bitcounter
 		ld l,#0		;input value to return
 	loop:
@@ -87,8 +88,6 @@ u08 spiTransferByte(u08 data)
 		ld a,(_portval)	;load old port value
 		and #~MOSI	;clear old data value
 		or e		;add new value
-		ld (_portval),a	;and save it
-		ld b,#>_SPI_PORT_OUT	;and out
 		out (c),a	;value of c does not matter here, only msb byte in b!
 
 		;;;input bit
@@ -102,8 +101,6 @@ u08 spiTransferByte(u08 data)
 		;;;clock low
 		ld a,(_portval)
 		and #~SCK
-		ld (_portval),a	;save it
-		ld b,#>_SPI_PORT_OUT	;and out
 		out (c),a	;value of c does not matter here, only msb byte in b!
 
 		dec d
