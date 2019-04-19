@@ -14,12 +14,13 @@ sec_tbl:	.ds	4 * 12
 trk_hdr:	.ds	2
 sec_buf:	.ds	2
 
-	;; this is initialised when the "BIOS: FORMAT TRACK" RSX has been found.
+	;; this is initialised when the "BIOS: *" RSX has been found.
+commands_store:		;; must be in order with command!!!
 bios_select_format:
 	.dw 0		;; address of function
 	.db 0		;; "rom select" for function
 
-bios_format_track:
+bios_read_sector:
 	.dw 0		;; address of function
 	.db 0		;; "rom select" for function
 
@@ -27,15 +28,24 @@ bios_write_sector:
 	.dw 0		;; address of function
 	.db 0		;; "rom select" for function
 
+bios_format_track:
+	.dw 0		;; address of function
+	.db 0		;; "rom select" for function
+
 	.area _INITIALIZED
+commands:
 cmd_bios_select_format:
 	.db 3+0x80	;; this is the "BIOS: SELECT FORMAT" RSX
+
+cmd_bios_read_sector:
+	.db 4+0x80	;; this is the "BIOS: READ SECTOR" RSX
 
 cmd_bios_write_sector:
 	.db 5+0x80	;; this is the "BIOS: WRITE SECTOR" RSX
 
 cmd_bios_format_track:
 	.db 6+0x80	;; this is the "BIOS: FORMAT TRACK" RSX
+nocommands:
 
 	.area _CODE
 
@@ -50,34 +60,60 @@ _floppy_init::
 	call kl_rom_walk
 
 	;;;find commands
-	ld hl,#(cmd_bios_select_format)
+	ld hl,#commands
+	ld de,#commands_store
+	ld b,#nocommands-commands		;no. of commands
+next_command:
+	push bc
+	push hl
+	push de
 	call kl_find_command
+	pop de
 	jr nc,err
 	;; command found, store address of command
-	ld (bios_select_format),hl
+	ld a,l
+	ld (de),a
+	ld a,h
+	inc de
+	ld (de),a
 	;; store "rom select" of command
 	ld a,c
-	ld (bios_select_format+2),a
-
-	ld hl,#(cmd_bios_format_track)
-	call kl_find_command
-	jr nc,err
-	ld (bios_format_track),hl
-	ld a,c
-	ld (bios_format_track+2),a
-
-	ld hl,#cmd_bios_write_sector
-	call kl_find_command
-	jr nc,err
-	ld (bios_write_sector),hl
-	ld a,c
-	ld (bios_write_sector+2),a
-
+	inc de
+	ld (de),a
+	inc de
+	pop hl
+	inc hl
+	pop bc
+	djnz next_command
 	ld l,#1
 	jr exit
+
 err:
+	pop hl		;adjust stack
+	pop bc
 	ld l,#0
 exit:
+	ret
+
+_read_track::
+	push ix
+	ld ix,#0
+	add ix,sp
+	;; store buffer pointers
+	;; first 2 byte are from "push ix", next 2 return adress from call, so first
+	;;  parameter starts at offset 4
+	ld l,4(ix)	;buf lo
+	ld h,5(ix)	;buf hi
+	ld a,6(ix)	;track
+	ld (trk_hdr),hl
+	ld bc,#0x100	;size of track header
+	add hl,bc	;to skip
+	ld (sec_buf),hl
+
+	call read	;TODO: sector list in track header!
+	ld l,#1
+
+	pop ix
 	ret
 
 _write_track::
@@ -144,6 +180,30 @@ format:
 	rst 3*8
 	.dw bios_format_track
 
+	ret
+
+read:	;;track in a
+	ld hl,(sec_buf)	;buf
+	ld b,#9		;no. sectors
+	;ld c,#0xc1	;sector id	TODO: autodetect
+	ld c,#0x41	;sector id	TODO: autodetect
+rloop:
+	ld d,a		;track
+	push hl	;should be preserved on no error
+	push bc
+	push af
+	ld e,#driveno
+	;; execute command
+	rst #(3*8)
+	.dw #bios_read_sector
+	pop af
+	pop bc
+	pop hl
+	;ret nc		;return on error TODO, flags are affected by pop af!
+	ld de,#0x200
+	add hl,de	;next buffer
+	inc c		;next sector
+	djnz rloop
 	ret
 
 write:

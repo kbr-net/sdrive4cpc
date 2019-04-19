@@ -2,8 +2,9 @@
 
 **sdrive4cpc** is a Tool for Amstrad(Schneider)-CPC computers to access
 to a **SD-Card** connected to the *parallel port* of the **CPC**.
-It is in early development state and can now only write *DSK-Images*
-stored on SD back to *real disc*.
+It is in early development state and can now write *DSK-Images*
+stored on SD back to *real disc*, and create images from disc
+(experimental, only vendor format yet).
 
 ## Wirering:
 

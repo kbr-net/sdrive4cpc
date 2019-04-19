@@ -629,7 +629,7 @@ u32 fatFileCreate (char *fileName, u32 fileSize) {
 	de[entryNo].deHighClust = clusterNo >> 16;
 	de[entryNo].deStartCluster = clusterNo & 0xFFFF;
 	strncpy(de[entryNo].deName,fileName,8);
-	strncpy(de[entryNo].deExtension,"ATR",3);
+	strncpy(de[entryNo].deExtension,"DSK",3);
 	de[entryNo].deFileSize = fileSize;
 	de[entryNo].deAttributes = 0x20;	//normal file, archive bit
 
@@ -720,7 +720,7 @@ u32 fatFileNew (char *filename, u32 size) {
 	//check filename already present
 	//struct direntry * de = (struct direntry*) mmc_sector_buffer;
 	while ( fatGetDirEntry(i++,0) ) {
-		if (strcmp(file_buffer, filename)) {
+		if (strncmp(file_buffer, filename, 8) == 0) {
 			printf("name %s already exists!\r\n", filename);
 			return(0);
 		}
