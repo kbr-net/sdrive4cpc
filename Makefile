@@ -8,7 +8,7 @@ LDFLAGS=--code-loc 0x120 --data-loc 0 --no-std-crt0
 
 TARGET=sdrive
 
-OBJS=	crt0.rel stdio.rel cpc.rel fat.rel spi.rel mmc.rel floppy.rel main.rel
+OBJS=	crt0.rel stdio.rel cpc.rel fat.rel spi.rel mmc.rel disc.rel main.rel
 
 all:	$(OBJS) $(TARGET).hex $(TARGET).bin $(TARGET).dsk $(TARGET).cdt
 

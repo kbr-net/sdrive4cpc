@@ -5,7 +5,7 @@
 #include "types.h"
 #include "fat.h"
 #include "mmc.h"
-#include "floppy.h"
+#include "disc.h"
 
 unsigned char file_buffer[11*0x200];
 unsigned char mmc_sector_buffer[512];	// one sector
@@ -35,8 +35,8 @@ int main () {
 	unsigned char r;
 	FileInfo.vDisk = &vDisk;
 
-	if(!floppy_init()) {
-		printf("error floppy init\r\n");
+	if(!disc_init()) {
+		printf("error disc init\r\n");
 		return(1);
 	}
 	//init structs

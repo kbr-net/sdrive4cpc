@@ -1,6 +1,6 @@
-;dsk2disc (c) 2019 by KBr
+;amsdos disc functions, dsk image, track read/write (c) 2019 by KBr
 
-	.module floppy
+	.module disc
 	.globl sec_tbl
 	.globl trk_hdr
 	.globl sec_buf
@@ -53,7 +53,7 @@ nocommands:
 kl_rom_walk	=	0xbccb
 kl_find_command	=	0xbcd4
 
-_floppy_init::
+_disc_init::
 	;;;init roms - needed if started directly with RUN"...
 	ld de,#0x0040
 	ld hl,#0xa6fb
