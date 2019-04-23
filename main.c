@@ -5,6 +5,7 @@
 #include "types.h"
 #include "fat.h"
 #include "mmc.h"
+#include "floppy.h"
 #include "disc.h"
 
 unsigned char file_buffer[11*0x200];
@@ -111,6 +112,7 @@ reset:
 			case 'r':
 				printf("file name: ");
 				getline();
+
 				if(!fatFileNew(linebuf, 40*(9*0x200+0x100UL)+0x100))
 					break;
 				FileInfo.vDisk->current_cluster=FileInfo.vDisk->start_cluster;
@@ -129,10 +131,10 @@ reset:
 				offset += 0x100;
 				for(i = 0; i < 40; i++) {
 					unsigned char s;
+					struct s_list *fdc_sector_list;
 
-					printf("Reading track %02u\r\n", i);
-					if(!read_track(file_buffer, i))
-						break;
+					printf("Track %02u:\r\nReading sector info\r\n", i);
+					fdc_sector_list = get_sector_info(i);
 					//add track header
 					track_info.track = i;
 					track_info.side = 0;
@@ -142,12 +144,18 @@ reset:
 					track_info.filler = 0xe5;
 					for(s = 0; s < 9; s++) {
 						track_info.sinfo[s].track = i;
-						track_info.sinfo[s].side = 0;
-						track_info.sinfo[s].id = s+0x41;
-						track_info.sinfo[s].size = 2;
-						//track_info.sinfo[s].gap = 2;
+						track_info.sinfo[s].side = fdc_sector_list[s].head;
+						track_info.sinfo[s].id = fdc_sector_list[s].id;
+						track_info.sinfo[s].size = fdc_sector_list[s].size;
+						track_info.sinfo[s].FDC_status1 = fdc_sector_list[s].stat1;
+						track_info.sinfo[s].FDC_status2 = fdc_sector_list[s].stat2;
+						printf("%02x ", track_info.sinfo[s].id);
 					}
 					memcpy(file_buffer, &track_info, sizeof(track_info));
+
+					printf("\r\nReading track data\r\n");
+					if(!read_track(file_buffer))
+						break;
 #ifdef DEBUG
 					printf("Writing at 0x%05lx\r\n", offset);
 #else

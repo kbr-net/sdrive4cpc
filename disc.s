@@ -104,13 +104,12 @@ _read_track::
 	;;  parameter starts at offset 4
 	ld l,4(ix)	;buf lo
 	ld h,5(ix)	;buf hi
-	ld a,6(ix)	;track
 	ld (trk_hdr),hl
 	ld bc,#0x100	;size of track header
 	add hl,bc	;to skip
 	ld (sec_buf),hl
 
-	call read	;TODO: sector list in track header!
+	call read
 	ld l,#1
 
 	pop ix
@@ -182,27 +181,34 @@ format:
 
 	ret
 
-read:	;;track in a
+read:
 	ld hl,(sec_buf)	;buf
-	ld b,#9		;no. sectors
-	;ld c,#0xc1	;sector id	TODO: autodetect
-	ld c,#0x41	;sector id	TODO: autodetect
+	ld ix,(trk_hdr)
+	ld b,0x15(ix)	; no. sectors
 rloop:
-	ld d,a		;track
+	ld c,0x18+2(ix)	;sector
+	ld d,0x18(ix)	;track
 	push hl	;should be preserved on no error
 	push bc
-	push af
+	push ix
 	ld e,#driveno
 	;; execute command
 	rst #(3*8)
 	.dw #bios_read_sector
-	pop af
+	pop ix
 	pop bc
 	pop hl
-	;ret nc		;return on error TODO, flags are affected by pop af!
+	;ret nc		;return on error?
 	ld de,#0x200
 	add hl,de	;next buffer
-	inc c		;next sector
+	inc ix		;next sector id
+	inc ix
+	inc ix
+	inc ix
+	inc ix
+	inc ix
+	inc ix
+	inc ix
 	djnz rloop
 	ret
 

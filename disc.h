@@ -1,5 +1,5 @@
 unsigned char disc_init();
-unsigned char read_track(unsigned char *buf, unsigned char track);
+unsigned char read_track(unsigned char *buf);
 unsigned char write_track(unsigned char *buf);
 
 struct sector_info {

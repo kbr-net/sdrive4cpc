@@ -4,7 +4,7 @@
 to a **SD-Card** connected to the *parallel port* of the **CPC**.
 It is in early development state and can now write *DSK-Images*
 stored on SD back to *real disc*, and create images from disc
-(experimental, only vendor format yet).
+(some copy protection may be fail).
 
 ## Wirering:
 
