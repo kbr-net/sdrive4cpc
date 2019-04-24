@@ -188,10 +188,10 @@ read:
 rloop:
 	ld c,0x18+2(ix)	;sector
 	ld d,0x18(ix)	;track
+	ld e,#driveno
 	push hl	;should be preserved on no error
 	push bc
 	push ix
-	ld e,#driveno
 	;; execute command
 	rst #(3*8)
 	.dw #bios_read_sector
@@ -201,14 +201,8 @@ rloop:
 	;ret nc		;return on error?
 	ld de,#0x200
 	add hl,de	;next buffer
-	inc ix		;next sector id
-	inc ix
-	inc ix
-	inc ix
-	inc ix
-	inc ix
-	inc ix
-	inc ix
+	ld de,#8
+	add ix,de	;next sector id
 	djnz rloop
 	ret
 
@@ -251,10 +245,8 @@ w_sec:
 	pop hl
 	pop de
 	pop af
-	inc ix		;next sector id
-	inc ix
-	inc ix
-	inc ix
+	ld bc,#4
+	add ix,bc	;next sector id
 	ld bc,#0x200
 	add hl,bc	;next sector buffer
 	dec a		;next sector
