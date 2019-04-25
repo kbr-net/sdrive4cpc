@@ -135,6 +135,8 @@ reset:
 
 					printf("Track %02u:\r\nReading sector info\r\n", i);
 					fdc_sector_list = get_sector_info(i);
+					if (!fdc_sector_list)
+						break;
 					//add track header
 					track_info.track = i;
 					track_info.side = 0;

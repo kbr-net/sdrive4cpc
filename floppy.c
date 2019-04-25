@@ -12,7 +12,10 @@ __sfr __banked __at 0xfb7e fdc_status;
 #define FDC_READ	0x06
 #define FDC_READ_ID	0x0a
 #define FDC_SEEK	0x0f
+#define FDC_SENSE_INT	0x08
 #define MF	0x40	//mfm command flag
+#define SE	0x20	//seek end in S0
+#define IC	0x40	//seek error in S0
 
 //main status register flags
 #define RQM	0x80	//request for master
@@ -45,6 +48,33 @@ unsigned char fdc_read_byte () {
 	return(fdc_data);
 }
 
+unsigned char seek(unsigned char track) {
+	unsigned char S0;
+	unsigned char TR;
+
+	//send command seek
+	fdc_send_byte(FDC_SEEK);
+	fdc_send_byte(0x00);	//head, unit
+	fdc_send_byte(track);	//track
+	//wait seek
+	for(;;) {
+		fdc_send_byte(FDC_SENSE_INT);
+		//read result
+		S0 = fdc_read_byte();
+		TR = fdc_read_byte();
+#ifdef DEBUG
+		printf("%02x %02x\r\n", S0, TR);
+#endif
+		if(S0 & SE)
+			break;
+	}
+	if(S0 & IC) {
+		printf("seek error: %02x\r\n", S0);
+		return(1);
+	}
+	return(0);
+}
+
 struct s_list * get_sector_info (unsigned char track) {
 	unsigned char sec;
 	unsigned short i;
@@ -54,12 +84,8 @@ struct s_list * get_sector_info (unsigned char track) {
 	sleep(1);		//wait 1s motor spin-up
 
 	//send command seek
-	fdc_send_byte(FDC_SEEK);
-	fdc_send_byte(0x00);	//head, unit
-	fdc_send_byte(track);	//track
-
-	//wait seek
-	while(fdc_status & BUSY);
+	if (seek(track))
+		return(0);
 
 	//send command read with an illegal sector-id(0)
 	//to get returned after index hole for start positioning
