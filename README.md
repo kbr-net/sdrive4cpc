@@ -6,6 +6,8 @@ It is in early development state and can now write *DSK-Images*
 stored on SD back to *real disc*, and create images from disc
 (some copy protection may be fail).
 
+<span style="color:red">There is an evil bug on writing to SD-Card, which destroys the data sometimes, i didn't found yet. **Please be aware to backup your data!**</span>
+
 ## Wirering:
 
 	CPC parallel port		SD-Card
