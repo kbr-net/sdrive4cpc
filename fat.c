@@ -490,6 +490,10 @@ unsigned short faccess_offset(char mode, u32 offset_start, unsigned short ncount
                                 }
 
                                 current_sector = fatClustToSect(FileInfo.vDisk->current_cluster) + nsector;
+				if(current_sector > SectorsTotal) {	//for debugging
+					printf("sector error: %lu, %lu, %u, %u\r\n", current_sector, FileInfo.vDisk->current_cluster, BytesPerSector, SectorsPerCluster);
+					break;
+				}
 #ifdef DEBUG
 				printf("sector: %lu\r\n", current_sector);
 #else
