@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "cpc.h"
 #include "types.h"
 #include "fat.h"
@@ -28,6 +29,7 @@ unsigned char * getline() {
 			}
 			continue;
 		}
+		c = toupper(c);
 		putchar(c);		//echo
 		linebuf[i] = c;
 		i++;
