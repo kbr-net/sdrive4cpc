@@ -21,6 +21,13 @@ unsigned char * getline() {
 
 	while(c != '\r') {
 		c = getchar();
+		if (c == 0x7f) {        //backspace?
+			if (i) {
+				printf("\b \b");
+				i--;
+			}
+			continue;
+		}
 		putchar(c);		//echo
 		linebuf[i] = c;
 		i++;
