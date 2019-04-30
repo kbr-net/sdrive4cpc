@@ -45,7 +45,7 @@ int main () {
 	memcpy(disc_info.creator, "sdrive4cpc\r\n", 12);
 	memcpy(track_info.label, "Track-Info\r\n", sizeof(track_info.label));
 
-	printf("SDrive for CPC --- (c) 2019 by KBr\r\n");	
+	printf("SDrive for CPC V0.1 --- (c) 2019 by KBr\r\n\n");
 
 reset:
 	mmcInit();
@@ -72,7 +72,7 @@ reset:
 		unsigned char type;
 		unsigned long offset;
 
-		printf("\r\n[i] - (re)init SD Card\r\n[d] - directory\r\n[c] - change directory\r\n[w] - write image to disc    [r] - read image from disc\r\n[q] - quit\r\n\r\n# ");
+		printf("\r\n[i] - (re)init SD Card\r\n[d] - directory\r\n[c] - change directory\r\n[w] - write image to disc\r\n[r] - read image from disc\r\n[q] - quit\r\n\r\n# ");
 		c = getchar();
 		printf("%c\r\n",c);
 		switch(c) {
