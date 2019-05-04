@@ -10,15 +10,7 @@ are supported yet, some copy protection may fail.
 <span style="color:red">There is an evil bug on writing to SD-Card, which destroys the data sometimes, i didn't found yet. **Please be aware to backup your data!**</span>
 
 ## Wirering:
-
-	CPC parallel port		SD-Card
-
-	2(Data0)	----->		5(SCLK)
-	3(Data1)	----->		2(DI)
-	4(Data2)	----->		1(CS)
-	11(Busy)	<-----		7(DO)
-	19..26(GND)	------		3,6(VSS) ----- GND
-					4(VDD)	<----- 3.3V external
+![](doc/sdrive4cpc.jpg)
 
 - For output pins 2-4 to SD-Card use a simple voltage divider with
 resistors, e. g. 1.8K/3.3K(GND).
