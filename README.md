@@ -9,7 +9,7 @@ are supported yet, some copy protection may fail.
 
 <span style="color:red">There is an evil bug on writing to SD-Card, which destroys the data sometimes, i didn't found yet. **Please be aware to backup your data!**</span>
 
-## Wirering:
+## Wiring:
 ![](doc/sdrive4cpc.jpg)
 
 - For output pins 2-4 to SD-Card use a simple voltage divider with
