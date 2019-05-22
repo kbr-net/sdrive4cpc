@@ -1,0 +1,1 @@
+void rsx_init();

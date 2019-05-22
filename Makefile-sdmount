@@ -4,21 +4,20 @@ CC=/media/soft/historic/cpc/cross/sdcc/bin/sdcc
 AS=/media/soft/historic/cpc/cross/sdcc/bin/sdasz80
 
 CCFLAGS=-mz80#-DDEBUG
-LDFLAGS=--code-loc 0x120 --data-loc 0 --no-std-crt0
+LDFLAGS=--code-loc 0x4020 --data-loc 0 --no-std-crt0
 
-TARGET=sdrive
+TARGET=sdmount
 
-OBJS=	crt0.rel stdio.rel cpc.rel fat.rel spi.rel mmc.rel floppy.rel disc.rel main.rel
+OBJS=	crt0-sdmount.rel stdio.rel fat.rel spi.rel mmc.rel rsx.rel $(TARGET).rel
 
 all:	$(OBJS) $(TARGET).hex $(TARGET).bin $(TARGET).dsk $(TARGET).cdt
-	make -f Makefile-sdmount
 
 $(TARGET).hex: $(OBJS)
 	$(CC) $(CCFLAGS) $(LDFLAGS) -o $@ $(OBJS)
 
 $(TARGET).bin: $(TARGET).hex
 	sdobjcopy -I ihex -O binary $(TARGET).hex $@
-	/media/soft/historic/cpc/cross/hideur_maikeur-master/hideur $@ -o $@ -t 2 -x "&100" -l "&100"
+	/media/soft/historic/cpc/cross/hideur_maikeur-master/hideur $@ -o $@ -t 2 -x "&4000" -l "&4000"
 
 $(TARGET).dsk:	$(TARGET).bin
 	/media/soft/historic/cpc/cross/cpcxfs/cpcxfs -f -nd $@ -p $(TARGET).bin

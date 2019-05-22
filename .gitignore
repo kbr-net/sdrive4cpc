@@ -4,4 +4,9 @@
 *.lst
 *.sym
 *.map
+*.cdt
+*.bin
+*.dsk
+*.hex
+*.noi
 sdrive.*
