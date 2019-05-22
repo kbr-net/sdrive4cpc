@@ -438,7 +438,7 @@ u32 getClusterN(u32 ncluster)
         return (FileInfo.vDisk->current_cluster);
 }
 
-unsigned short faccess_offset(char mode, u32 offset_start, unsigned short ncount)
+unsigned short faccess_offset(char mode, unsigned char *file_buffer, u32 offset_start, unsigned short ncount)
 {
         unsigned short j;
         u32 offset=offset_start;

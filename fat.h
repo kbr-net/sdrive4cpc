@@ -444,7 +444,7 @@ u32 fatClustToSect(u32 clust);
 unsigned char fatGetDirEntry(unsigned short entry, unsigned char use_long_names);
 u32 fatNextCluster(u32 cluster);
 u32 getClusterN(u32 ncluster);
-unsigned short faccess_offset(char mode, u32 offset_start, unsigned short ncount);
+unsigned short faccess_offset(char mode, unsigned char *file_buffer, u32 offset_start, unsigned short ncount);
 u32 fatFileNew (char *filename, u32 size);
 
 #endif

@@ -136,7 +136,7 @@ reset:
 				//copy to buffer
 				memcpy(file_buffer, &disc_info, sizeof(disc_info));
 				//write to image
-				faccess_offset(FILE_ACCESS_WRITE,offset,0x100);
+				faccess_offset(FILE_ACCESS_WRITE,file_buffer,offset,0x100);
 				offset += 0x100;
 				for(i = 0; i < 40; i++) {
 					unsigned char s;
@@ -172,7 +172,7 @@ reset:
 #else
 					printf("Writing at 0x%05lx", offset);
 #endif
-					faccess_offset(FILE_ACCESS_WRITE,offset,disc_info.track_size);
+					faccess_offset(FILE_ACCESS_WRITE,file_buffer,offset,disc_info.track_size);
 					printf("\r\n");
 					if(readchar())
 						break;
@@ -190,7 +190,7 @@ reset:
 
 				//read the DSK header
 				offset = 0;
-				faccess_offset(FILE_ACCESS_READ,offset,0x100);
+				faccess_offset(FILE_ACCESS_READ,file_buffer,offset,0x100);
 				tracks = file_buffer[0x30];	//save nr. of tracks
 				if(tracks < 39 || tracks > 43) {
 					printf("%u tracks looks not like DSK!\r\n", tracks);
@@ -205,7 +205,7 @@ reset:
 #else
 					printf("Reading at 0x%05lx", offset);
 #endif
-					if(!faccess_offset(FILE_ACCESS_READ,offset,11*0x200))
+					if(!faccess_offset(FILE_ACCESS_READ,file_buffer,offset,11*0x200))
 						break;
 					printf("\r\nWriting track %02u\r\n", file_buffer[0x18]);
 					if(!write_track(file_buffer)) {
