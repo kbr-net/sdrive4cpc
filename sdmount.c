@@ -18,15 +18,19 @@ unsigned char *name;
 unsigned char *buf;
 unsigned char *load;
 unsigned char *entry;
+unsigned char *stackaddr;
+unsigned char *stack;
 unsigned char *vector;
 
 void nosup () {
 	__asm
 		ld hl,#0
 		add hl,sp
+		ld (_stackaddr),hl
 		ld e,(hl)	//last return address on stack
 		inc hl
 		ld d,(hl)
+		ld (_stack),de
 		ex de,hl
 		dec hl
 		ld b,(hl)	//last call adress
@@ -34,7 +38,7 @@ void nosup () {
 		ld c,(hl)
 		ld (_vector),bc
 	__endasm;
-	printf("vector %p not supported\n\r", vector);
+	printf("vector %p (%p@%p) not supported\n\r", vector, stack, stackaddr);
 }
 
 void in_open () {
